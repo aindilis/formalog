@@ -1,0 +1,1 @@
+/var/lib/myfrdcsa/codebases/minor/world-state-monitor/wsm-assert.pl

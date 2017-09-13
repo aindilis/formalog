@@ -1,0 +1,84 @@
+From 7bc2143f8ee6eee8fc9e30c7bd17d7f6bde16143 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Petr=20P=C3=ADsa=C5=99?= <ppisar@redhat.com>
+Date: Tue, 9 Jun 2015 14:37:53 +0200
+Subject: [PATCH] Adjust list parsing to SWI Prolog 7
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+SWI Prolog 7 brought a different representation of lists. This patch
+imlements the PL_LIST_PAIR type in swi2perl(). It does not touch
+PL_NIL type as I don't know what to do with it.
+
+CPAN RT#105114
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ Low/swi2perl.c | 46 +++++++++++++++++++++++-----------------------
+ 1 file changed, 23 insertions(+), 23 deletions(-)
+
+diff --git a/Low/swi2perl.c b/Low/swi2perl.c
+index 9f91292..53f0f14 100644
+--- a/Low/swi2perl.c
++++ b/Low/swi2perl.c
+@@ -32,34 +32,34 @@ SV *swi2perl(pTHX_ term_t t, AV *cells) {
+ 	return newSVnv(v);
+     }
+     case PL_STRING:
++    /*case PL_NIL:*/
+     case PL_ATOM: {
+         return swi2perl_atom_sv(aTHX_ t);
+     }
+-    case PL_TERM: {
+-        if (PL_is_list(t)) {
+-            AV *array=newAV();
+-            SV *ref=newRV_noinc((SV *)array);
+-            int len=0;
+-            term_t head, tail;
+-            while(PL_is_list(t)) {
+-                if(PL_get_nil(t)) {
+-                    sv_bless(ref, gv_stashpv( len ?
+-                                              TYPEINTPKG "::list" :
+-                                              TYPEINTPKG "::nil", 1));
+-                    return ref;
+-                }
+-                head=PL_new_term_refs(2);
+-                tail=head+1;
+-                PL_get_list(t, head, tail);
+-                av_push(array, swi2perl(aTHX_ head, cells));
+-                t=tail;
+-                len++;
++    case PL_LIST_PAIR: {
++        AV *array=newAV();
++        SV *ref=newRV_noinc((SV *)array);
++        int len=0;
++        term_t head, tail;
++        while(PL_is_list(t)) {
++            if(PL_get_nil(t)) {
++                sv_bless(ref, gv_stashpv( len ?
++                                          TYPEINTPKG "::list" :
++                                          TYPEINTPKG "::nil", 1));
++                return ref;
+             }
+-            av_push(array, swi2perl(aTHX_ tail, cells));
+-            sv_bless(ref, gv_stashpv(TYPEINTPKG "::ulist", 1));
+-            return ref;
++            head=PL_new_term_refs(2);
++            tail=head+1;
++            PL_get_list(t, head, tail);
++            av_push(array, swi2perl(aTHX_ head, cells));
++            t=tail;
++            len++;
+         }
+-
++        av_push(array, swi2perl(aTHX_ tail, cells));
++        sv_bless(ref, gv_stashpv(TYPEINTPKG "::ulist", 1));
++        return ref;
++    }
++    case PL_TERM: {
+         {
+             /* any other compound */
+             SV *ref;
+-- 
+2.1.0
+

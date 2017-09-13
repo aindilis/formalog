@@ -1,0 +1,14 @@
+#!/usr/bin/perl -w
+
+use KBS2::Util;
+use PerlLib::SwissArmyKnife;
+use UniLang::Util::TempAgent;
+
+my $tempagent = UniLang::Util::TempAgent->new();
+
+my $res = $tempagent->MyAgent->QueryAgent
+  (
+   Receiver => 'Agent1',
+   Contents => 'echo hi',
+  );
+print Dumper($res);

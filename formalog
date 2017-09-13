@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cd /var/lib/myfrdcsa/codebases/minor/formalog && ./pl.pl -g "consult(t/prolog/t1),setContext(agent1,formalog1,'Org::Cyc::BaseKB'),formalog_init(agent1,formalog1)."

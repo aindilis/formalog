@@ -1,0 +1,37 @@
+#!/usr/bin/perl -w
+
+use KBS2::ImportExport;
+use KBS2::Util;
+use Task2::Util;
+use PerlLib::SwissArmyKnife;
+use UniLang::Util::TempAgent;
+
+my $tempagent = UniLang::Util::TempAgent->new;
+my $importexport = KBS2::ImportExport->new();
+
+while (1) {
+  my $input = QueryUser('Prolog?: ');
+  chomp $input;
+  my $res1 = $importexport->Convert
+    (
+     Input => $input,
+     InputType => 'Prolog',
+     OutputType => 'Interlingua',
+    );
+  if ($res1->{Success}) {
+    my $interlingua = $res1->{Output}[0];
+    my $variables = ListVariablesInFormula(Formula => $interlingua);
+    unshift @$variables, '_prolog_list';
+    my $query = [['_prolog_list',$variables,$interlingua]];
+
+    my $res2 = $tempagent->MyAgent->QueryAgent
+      (
+       Receiver => "Agent1",
+       Data => {
+		_DoNotLog => 1,
+		Eval => $query,
+	       },
+      );
+    print Dumper($res2);
+  }
+}

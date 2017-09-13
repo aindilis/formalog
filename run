@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# tspy(clause_to_string),
+
+./pl.pl -g 'consult(unilang),start,halt.'

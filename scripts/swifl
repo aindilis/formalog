@@ -1,0 +1,100 @@
+#!/usr/bin/perl -w
+
+use BOSS::Config;
+use PerlLib::SwissArmyKnife;
+
+use KBS2::Client;
+use KBS2::ImportExport;
+use KBS2::Util;
+use PerlLib::SwissArmyKnife;
+use UniLang::Util::TempAgent;
+
+use Language::Prolog::Yaswi ':query', ':load';
+
+
+# swipl -s consecutive.pl -g 'page_report,quit.' 2> /dev/null 
+$specification = q(
+	-s <file>		Load file as a script.
+	-g <goal>		Goal  is executed just before entering the top level.
+);
+
+my $config =
+  BOSS::Config->new
+  (Spec => $specification);
+my $conf = $config->CLIConfig;
+# $UNIVERSAL::systemdir = "/var/lib/myfrdcsa/codebases/minor/system";
+
+if (exists $conf->{'-s'}) {
+  LoadAllPredicates(File => $conf->{'-s'});
+
+  # FIXME: find related concept with having a ton of variables that
+  # we can access for prolog from yaswi
+  LoadSomeVariables();
+}
+
+if (exists $conf->{'-g'}) {
+  ExecuteGoals(Goals => $conf->{'-g'});
+}
+
+
+sub LoadAllPredicates {
+  my (%args) = @_;
+  my $f = $args{File};
+  # load the file using yaswi, and get a listing of all the
+  # predicates, and create yaswi predicates for them
+
+  my $predicateinfo = LookupPredicates(File => $f);
+  if (defined $predicateinfo) {
+    LoadPredicates(PredicateInfo => $predicateinfo);
+  }
+  
+}
+
+sub LookupPredicates {
+  my (%args) = @_;
+  # see how long this will take.
+  return;
+  my $database = read_file($args{File});
+  my @res;
+  {
+    use Language::Prolog::Sugar
+      functors => { 'listing' => 'listing' },
+      vars => [qw(X)];
+
+    foreach my $line (split /\n/, $database) {
+      ++$i;
+      print "$i $line\n";
+    }
+
+    swi_inline($database);
+    swi_set_query(listing(X));
+    while (swi_next) {
+      swi_query();
+      print Dumper(swi_var(X));
+      my @value = [1];
+      push @res, \@value;
+    }
+  }
+  return \@res;
+}
+
+sub LoadPredicates {
+  my (%args) = @_;
+  my $pi = $args{PredicateInfo};
+  print "hi\n";
+  foreach my $term (@$pi) {
+    print Dumper({Term => $term});
+  }
+  # {
+  #   require Language::Prolog::Sugar
+  #     functors => { 'page_read_p' => 'page_read_p' },
+  #     vars => [qw(Doc X)];
+  # }
+}
+
+sub LoadSomeVariables {
+  my (%args) = @_;
+  # create a bunch of variables.
+
+}
+

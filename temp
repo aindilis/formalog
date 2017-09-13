@@ -1,0 +1,5 @@
+./pl.pl -g  "consult(t/prolog/t1),formalog_init('Agent1','Yaswi1')."
+./pl.pl -g 'consult(t/prolog/t1),formalog_init(agent1,formalog1).'
+./pl.pl -g "consult(t/prolog/t1),formalog_init(agent1,formalog1)."
+./pl.pl -g "consult(t/prolog/t1),formalog_init('agent1','formalog1')."
+./pl.pl -g "consult(t/prolog/t1),formalog_init('Agent1','Formalog1')."

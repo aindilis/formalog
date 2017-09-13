@@ -1,0 +1,8 @@
+# yes work ./pl.pl -g 'consult(t/prolog/t1),formalog_init(agent1,formalog1).'
+# yes work ./pl.pl -g "consult(t/prolog/t1),formalog_init(agent1,formalog1)."
+# yes work ./pl.pl -g "consult(t/prolog/t1),formalog_init('agent1','formalog1')."
+
+# not work ./pl.pl -g "consult(t/prolog/t1),formalog_init('Agent1','Formalog1')."
+# not work ./pl.pl -g "consult(t/prolog/t1),formalog_init('Agent1','formalog1')."
+# not work ./pl.pl -g "consult(t/prolog/t1),formalog_init('agent1','Formalog1')."
+# not work ./pl.pl -g "consult(t/prolog/t1),formalog_init('Agent1','Yaswi1')."

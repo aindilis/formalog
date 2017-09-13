@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cd /var/lib/myfrdcsa/codebases/minor/formalog && ./pl.pl -g "consult(t/prolog/t1),formalog_load_database(formalog1,agent1),consult('formalog-elisp.pl')."

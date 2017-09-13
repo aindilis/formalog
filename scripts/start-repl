@@ -1,0 +1,80 @@
+#!/usr/bin/perl -w
+
+use BOSS::Config;
+use KBS2::ImportExport;
+use KBS2::Util;
+use Task2::Util;
+use PerlLib::SwissArmyKnife;
+use UniLang::Util::TempAgent;
+
+$specification = q(
+	-a <agent>	Agent to talk to 
+);
+
+my $config =
+  BOSS::Config->new
+  (Spec => $specification);
+my $conf = $config->CLIConfig;
+# $UNIVERSAL::systemdir = "/var/lib/myfrdcsa/codebases/minor/system";
+
+my $tempagent = UniLang::Util::TempAgent->new;
+my $importexport = KBS2::ImportExport->new();
+
+while (1) {
+  my $input = QueryUser('?- ',1);
+  chomp $input;
+  my $res1 = $importexport->Convert
+    (
+     Input => $input,
+     InputType => 'Prolog',
+     OutputType => 'Interlingua',
+    );
+  if ($res1->{Success}) {
+    my $interlingua = $res1->{Output}[0];
+    my $variables = ListVariablesInFormula(Formula => $interlingua);
+    unshift @$variables, '_prolog_list';
+    my $query = [['_prolog_list',$variables,$interlingua]];
+
+    my $res2 = $tempagent->MyAgent->QueryAgent
+      (
+       Receiver => $conf->{'-a'} || "Agent1",
+       Data => {
+		_DoNotLog => 1,
+		Eval => $query,
+	       },
+      );
+    # print Dumper({Res2 => $res2});
+    shift @$variables;
+    my $assertions = $res2->{Data}{Result};
+    foreach my $assertion (@$assertions) {
+      # print Dumper({Assertion => $assertion});
+      my $ref = ref($assertion);
+      if ($ref eq 'ARRAY') {
+	shift @$assertion;
+	my $i = 0;
+	while (defined $variables->[$i] and
+	       defined $assertion->[$i]) {
+	  my $res3 = $importexport->Convert
+	    (
+	     Input => [$assertion->[$i]],
+	     InputType => 'Interlingua',
+	     OutputType => 'Prolog',
+	    );
+	  my @res;
+	  my $var = TermIsVariable($variables->[$i]);
+	  if ($res3->{Success}) {
+	    my $output = $res3->{Output};
+	    chomp $output;
+	    push @res, [$var, $output];
+	  } else {
+	    push @res, [$var, "---ERROR---"];
+	  }
+	  my $it = $res[0];
+	  print $it->[0]." = ".$it->[1]."\n";
+	  ++$i;
+	}
+      }
+      print "\n";
+    }
+  }
+}

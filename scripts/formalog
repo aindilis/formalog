@@ -1,0 +1,8 @@
+#!/usr/bin/perl -w
+
+use Formalog::UniLangProxy;
+use PerlLib::SwissArmyKnife;
+
+my $unilangproxy = Formalog::UniLangProxy->new(AgentName => 'agent1', FormalogName => 'formalog1');
+
+print Dumper({Result => $unilangproxy->sublQuery('agent1','formalog1','(comment #$Researcher #$EverythingPSC)')});

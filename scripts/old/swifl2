@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Predicates perl5_call/3, perl5_eval/2 and perl5_method/4 will be available from prolog.
+
+# ./pl.pl -s frdcsa.pl -g 'load_frdcsa.'
+
+./pl.pl -s 'load-frdcsa.pl'
